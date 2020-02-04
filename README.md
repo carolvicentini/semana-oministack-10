@@ -8,7 +8,7 @@
 Projeto fullstack para cadastro e busca de desenvolvedores.
 
 * backend - Node.js: cadastra e lista os devs. Busca as informações no github e utiliza o mongodb para armazenamento.
-* web - React,js: interface web para o cadastro de devs
+* web - React.js: interface web para o cadastro de devs
 * mobile - React Native: permite pesquisar os devs próximos
 
 ### Instruções

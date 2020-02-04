@@ -26,8 +26,19 @@ function App() {
     setDevs([...devs, response.data]);
   }
 
+  async function handleRemoveDev(id) {
+    const response = await api.delete(`/devs/${id}`);
+
+    if (!response.error) {
+      setDevs(devs.filter(d => d._id !== id));
+    }
+  }
+
   return (
+
     <div id="app">
+
+      <script src='https://kit.fontawesome.com/a076d05399.js'></script>
       <aside>
         <strong>Cadastrar</strong>
         <DevForm onSubmit={handleAddDev} />
@@ -35,7 +46,7 @@ function App() {
       <main>
         <ul>
           {devs.map(dev => (
-            <DevItem key={dev._id} dev={dev} />
+            <DevItem key={dev._id} dev={dev} onDelete={handleRemoveDev} />
           ))}
         </ul>
       </main>
