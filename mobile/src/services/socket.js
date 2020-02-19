@@ -8,6 +8,10 @@ function subscribeToNewDevs(subscribeFunction) {
     socket.on('new-dev', subscribeFunction);
 }
 
+function subscribeToUpdatedDevs(subscribeFunction) {
+    socket.on('update-dev', subscribeFunction);
+}
+
 function subscribeToRemovedDevs(subscribeFunction) {
     socket.on('remove-dev', subscribeFunction);
 }
@@ -33,5 +37,6 @@ export {
     connect,
     disconnect,
     subscribeToNewDevs,
+    subscribeToUpdatedDevs,
     subscribeToRemovedDevs,
 };

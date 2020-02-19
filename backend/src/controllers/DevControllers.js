@@ -13,37 +13,85 @@ module.exports = {
     async store(request, response) {
         const { github_username, techs, latitude, longitude } = request.body;
 
-        let dev = await Dev.findOne({github_username});
+        let dev = await Dev.findOne({ github_username });
 
-        if (!dev) {
-            const apiResponse = await axios.get(`https://api.github.com/users/${github_username}`);
-
-            const { name = login, avatar_url, bio } = apiResponse.data;
-
-            const techsArray = parseStringAsArray(techs);
-
-            const location = {
-                type: 'Point',
-                coordinates: [parseFloat(longitude), parseFloat(latitude)],
-            };
-
-            dev = await Dev.create({
-                github_username,
-                name,
-                avatar_url,
-                bio,
-                techs: techsArray,
-                location
-            });
-
-            // Filtrar as connexoes que estão a 10 km de distância e que tenha as techs filtradas
-            const sendSocketMessageTo = findConnections(
-                { latitude, longitude },
-                techsArray
-            );
-
-            sendMessage(sendSocketMessageTo, 'new-dev', dev);
+        if (dev) {
+            return response.json({ message: 'Erro: usuário existente', error: 1 });
         }
+
+        const apiResponse = await axios.get(`https://api.github.com/users/${github_username}`);
+
+        const { name = login, avatar_url, bio } = apiResponse.data;
+
+        const techsArray = parseStringAsArray(techs);
+
+        const location = {
+            type: 'Point',
+            coordinates: [parseFloat(longitude), parseFloat(latitude)],
+        };
+
+        dev = await Dev.create({
+            github_username,
+            name,
+            avatar_url,
+            bio,
+            techs: techsArray,
+            location
+        });
+
+        // Filtrar as connexoes que estão a 10 km de distância e que tenha as techs filtradas
+        const sendSocketMessageTo = findConnections(
+            { latitude, longitude },
+            techsArray
+        );
+
+        sendMessage(sendSocketMessageTo, 'new-dev', dev);
+
+        return response.json(dev);
+    },
+
+    async update(request, response) {
+        const { id } = request.params;
+        const { github_username, techs, latitude, longitude } = request.body;
+
+        let dev = await Dev.findOne({ _id: id });
+
+        if (!dev || !github_username) {
+            return response.json({ message: 'Erro: usuário inexistente', error: 1 });
+        }
+
+        // pega de novo a atualização da bio e do nome
+        const apiResponse = await axios.get(`https://api.github.com/users/${dev.github_username}`);
+        const { name = login, avatar_url, bio } = apiResponse.data;
+
+        const techsArray = techs;// parseStringAsArray(techs);
+
+        const location = {
+            type: 'Point',
+            coordinates: [parseFloat(longitude), parseFloat(latitude)],
+        };
+
+        dev = dev.overwrite({
+            github_username,
+            name,
+            avatar_url,
+            bio,
+            techs: techsArray,
+            location
+        });
+
+        await dev.save();
+
+
+        // Filtrar as connexoes que estão a 10 km de desitância e que tenha as techs filtradas
+        const sendSocketMessageTo = findConnections(
+            { latitude, longitude },
+            techsArray
+        );
+
+        console.log(sendSocketMessageTo);
+
+        sendMessage(sendSocketMessageTo, 'update-dev', dev);
 
         return response.json(dev);
     },
@@ -74,5 +122,5 @@ module.exports = {
 
         return response.json(retorno);
     },
-
+    
 };
